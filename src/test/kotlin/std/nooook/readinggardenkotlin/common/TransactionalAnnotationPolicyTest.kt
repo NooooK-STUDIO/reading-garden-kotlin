@@ -23,7 +23,6 @@ class TransactionalAnnotationPolicyTest {
             TransactionalMethod(DefaultGardenQueryService::class.java, "getGardenDetail", Long::class.javaPrimitiveType, Long::class.javaPrimitiveType),
             TransactionalMethod(MemoQueryService::class.java, "getMemoDetail", Long::class.javaPrimitiveType, Long::class.javaPrimitiveType),
             TransactionalMethod(AuthService::class.java, "getProfile", Long::class.javaPrimitiveType),
-            TransactionalMethod(PushPreferenceService::class.java, "getPush", Long::class.javaPrimitiveType),
             TransactionalMethod(AppVersionQueryService::class.java, "getByPlatform", String::class.java),
         )
 
@@ -31,6 +30,19 @@ class TransactionalAnnotationPolicyTest {
             val transactional = method.transactionalAnnotation()
             assertNotNull(transactional, "${method.owner.simpleName}.${method.name} must be transactional")
             assertTrue(transactional.readOnly, "${method.owner.simpleName}.${method.name} must be read-only")
+        }
+    }
+
+    @Test
+    fun `methods that can repair missing data stay read-write`() {
+        val readWriteMethods = listOf(
+            TransactionalMethod(PushPreferenceService::class.java, "getPush", Long::class.javaPrimitiveType),
+        )
+
+        readWriteMethods.forEach { method ->
+            val transactional = method.transactionalAnnotation()
+            assertNotNull(transactional, "${method.owner.simpleName}.${method.name} must be transactional")
+            assertTrue(!transactional.readOnly, "${method.owner.simpleName}.${method.name} must stay read-write")
         }
     }
 

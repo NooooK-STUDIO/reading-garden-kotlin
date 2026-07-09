@@ -139,6 +139,33 @@ class AuthControllerIntegrationTest(
     }
 
     @Test
+    fun `get push should recreate missing settings for legacy user`() {
+        val signupBody = signup("missingpush@example.com", "pw1234", "fcm-missing-push")
+        val accessToken = signupBody.path("data").path("access_token").asText()
+        val user = userRepository.findByEmail("missingpush@example.com")
+        checkNotNull(user)
+        val userNo = user.id
+        val existingPush = pushSettingsRepository.findByUserId(userNo)
+        checkNotNull(existingPush)
+        pushSettingsRepository.delete(existingPush)
+
+        mockMvc.perform(
+            get("/api/v1/push/")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken"),
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.resp_code").value(200))
+            .andExpect(jsonPath("$.data.user_no").value(userNo))
+            .andExpect(jsonPath("$.data.push_app_ok").value(true))
+            .andExpect(jsonPath("$.data.push_book_ok").value(false))
+
+        val recreatedPush = pushSettingsRepository.findByUserId(userNo)
+        kotlin.test.assertNotNull(recreatedPush)
+        kotlin.test.assertEquals(true, recreatedPush.appOk)
+        kotlin.test.assertEquals(false, recreatedPush.bookOk)
+    }
+
+    @Test
     fun `duplicate email signup should return legacy conflict envelope`() {
         signup("dup@example.com", "pw", "fcm-1")
 
