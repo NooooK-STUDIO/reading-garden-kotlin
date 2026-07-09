@@ -116,6 +116,7 @@ class OpenApiConfigTest(
         val detailIsbn = requireOperation("get", "/api/v1/book/detail-isbn")
         val bookStatus = requireOperation("get", "/api/v1/book/status")
         val bookRead = requireOperation("get", "/api/v1/book/read")
+        val updateBook = requireOperation("put", "/api/v1/book", "/api/v1/book/")
         val updateRead = requireOperation("put", "/api/v1/book/read")
         val deleteBook = requireOperation("delete", "/api/v1/book", "/api/v1/book/")
         val upload = requireOperation("post", "/api/v1/book/image")
@@ -138,18 +139,25 @@ class OpenApiConfigTest(
         assertResponseExamplesContain(search, "200", "책 검색 성공")
         assertResponseExamplesContain(searchIsbn, "200", "책 검색(ISBN) 성공")
         assertResponseExamplesContain(detailIsbn, "200", "책 상세 조회 성공")
+        assertResponseExamplesContain(bookStatus, "200", "book_rating")
+        assertResponseExamplesContain(bookRead, "200", "book_rating")
         assertResponseExamplesContain(updateRead, "200", "독서 기록 수정 성공")
         assertResponseExamplesContain(upload, "201", "이미지 업로드 성공")
         assertResponseExamplesContain(deleteBook, "200", "책 삭제 성공")
         assertResponseExamplesContain(deleteImage, "201", "이미지 삭제 성공")
 
         assertThat(search.at("/parameters").toString()).contains("query", "start", "maxResults")
+        assertThat(updateBook.at("/requestBody/content/application~1json/schema/\$ref").asText()).contains("UpdateBookRequest")
+        assertThat(updateBook.at("/requestBody/content/application~1json/examples").toString()).contains("book_rating")
         assertThat(upload.at("/requestBody/content/multipart~1form-data").isMissingNode).isFalse
         assertThat(upload.at("/security").isEmpty).isFalse
         assertThat(upload.at("/responses/400").isMissingNode).isFalse
         assertThat(upload.at("/responses/401").isMissingNode).isFalse
 
         assertSchemaExample("BookStatusResponse", "current_page", "1")
+        assertSchemaExample("BookStatusItemResponse", "book_rating", "5")
+        assertSchemaExample("BookReadDetailResponse", "book_rating", "5")
+        assertSchemaExample("UpdateBookRequest", "book_rating", "5")
         assertSchemaExample("BookReadHistoryItemResponse", "book_current_page", "150")
         assertSchemaExample("BookDetailResponse", "itemPage", "321")
     }

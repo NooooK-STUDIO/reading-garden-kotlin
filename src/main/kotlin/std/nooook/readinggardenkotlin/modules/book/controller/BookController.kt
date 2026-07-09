@@ -237,7 +237,13 @@ class BookController(
             ApiResponse(
                 responseCode = "200",
                 description = "책 상태 조회 성공",
-                content = [Content(mediaType = "application/json", schema = Schema(implementation = BookStatusLegacyDataResponse::class))],
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = BookStatusLegacyDataResponse::class),
+                        examples = [ExampleObject(value = OpenApiExamples.BOOK_STATUS_SUCCESS)],
+                    ),
+                ],
             ),
         ],
     )
@@ -272,7 +278,13 @@ class BookController(
             ApiResponse(
                 responseCode = "200",
                 description = "독서 기록 조회 성공",
-                content = [Content(mediaType = "application/json", schema = Schema(implementation = BookReadDetailLegacyDataResponse::class))],
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = BookReadDetailLegacyDataResponse::class),
+                        examples = [ExampleObject(value = OpenApiExamples.BOOK_READ_DETAIL_SUCCESS)],
+                    ),
+                ],
             ),
         ],
     )
@@ -477,7 +489,13 @@ class BookController(
         description = "가든 이동, 분류 변경, 상태 변경 등 책 정보를 수정합니다.",
         requestBody = SwaggerRequestBody(
             required = true,
-            content = [Content(mediaType = "application/json", schema = Schema(implementation = UpdateBookRequest::class))],
+            content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = UpdateBookRequest::class),
+                    examples = [ExampleObject(name = "rating-update", value = OpenApiExamples.BOOK_UPDATE_RATING_REQUEST)],
+                ),
+            ],
         ),
     )
     @SecurityRequirement(name = "bearerAuth")

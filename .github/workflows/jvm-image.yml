@@ -162,7 +162,7 @@ jobs:
           test -f .env
           test -f .runtime.env
           test -f secrets/firebase-service-account.json
-          ./blue-green-deploy.sh
+          COMPOSE_PROJECT_NAME="reading-garden-prod" ./blue-green-deploy.sh
           EOF
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}

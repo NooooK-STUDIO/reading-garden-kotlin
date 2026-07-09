@@ -35,6 +35,7 @@ class BookEntity(
     val user: UserEntity,
     @Column(nullable = false)
     var page: Int = 0,
+    var rating: Int? = null,
     @Column(length = 30)
     var isbn: String? = null,
     @Column(length = 30)

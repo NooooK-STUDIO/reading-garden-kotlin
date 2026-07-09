@@ -57,6 +57,8 @@ data class UpdateBookRequest(
     val book_author: String? = null,
     @field:Schema(description = "수정할 표지 이미지 URL", example = "https://example.com/new.jpg", nullable = true)
     val book_image_url: String? = null,
+    @field:Schema(description = "완독 별점(1~5)", example = "5", nullable = true)
+    val book_rating: Int? = null,
 )
 
 @Schema(description = "독서 기록 생성 요청")

@@ -437,6 +437,114 @@ class BookControllerIntegrationTest(
     }
 
     @Test
+    fun `book rating should be saved and returned on read detail and completed bookshelf`() {
+        val accessToken = signupAndGetAccessToken("rating@example.com")
+        val user = checkNotNull(userRepository.findByEmail("rating@example.com"))
+        val garden = gardenRepository.save(
+            GardenEntity(
+                title = "별점 가든",
+                info = "소개",
+                color = "green",
+            ),
+        )
+        val book = bookRepository.save(
+            BookEntity(
+                garden = garden,
+                user = user,
+                title = "별점 책",
+                author = "저자",
+                publisher = "출판사",
+                info = "소개",
+                status = 1,
+                page = 100,
+            ),
+        )
+
+        mockMvc.perform(
+            put("/api/v1/book/")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+                .queryParam("book_no", book.id.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"book_rating":4}"""),
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.resp_code").value(200))
+            .andExpect(jsonPath("$.resp_msg").value("책 수정 성공"))
+
+        assertEquals(4, checkNotNull(bookRepository.findById(book.id).orElse(null)).rating)
+
+        mockMvc.perform(
+            get("/api/v1/book/read")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+                .queryParam("book_no", book.id.toString()),
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data.book_rating").value(4))
+
+        mockMvc.perform(
+            get("/api/v1/book/status")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+                .queryParam("status", "1")
+                .queryParam("page", "1")
+                .queryParam("page_size", "10"),
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data.list[0].book_rating").value(4))
+    }
+
+    @Test
+    fun `book rating should be allowed only for completed books`() {
+        val accessToken = signupAndGetAccessToken("rating-invalid@example.com")
+        val user = checkNotNull(userRepository.findByEmail("rating-invalid@example.com"))
+        val readingBook = bookRepository.save(
+            BookEntity(
+                user = user,
+                title = "읽는 책",
+                author = "저자",
+                publisher = "출판사",
+                info = "소개",
+                status = 0,
+                page = 100,
+            ),
+        )
+        val completedBook = bookRepository.save(
+            BookEntity(
+                user = user,
+                title = "완독 책",
+                author = "저자",
+                publisher = "출판사",
+                info = "소개",
+                status = 1,
+                page = 100,
+                rating = 5,
+            ),
+        )
+
+        mockMvc.perform(
+            put("/api/v1/book/")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+                .queryParam("book_no", readingBook.id.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"book_rating":4}"""),
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.resp_msg").value("다 읽은 책에만 별점을 입력할 수 있습니다."))
+
+        mockMvc.perform(
+            put("/api/v1/book/")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+                .queryParam("book_no", completedBook.id.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"book_status":0}"""),
+        )
+            .andExpect(status().isOk)
+
+        val savedBook = checkNotNull(bookRepository.findById(completedBook.id).orElse(null))
+        assertEquals(0, savedBook.status)
+        assertEquals(null, savedBook.rating)
+    }
+
+    @Test
     fun `status should include reading and read books when status is three`() {
         val accessToken = signupAndGetAccessToken("status@example.com")
         val user = checkNotNull(userRepository.findByEmail("status@example.com"))
