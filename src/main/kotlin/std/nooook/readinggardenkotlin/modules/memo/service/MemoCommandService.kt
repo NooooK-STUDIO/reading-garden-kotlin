@@ -55,7 +55,7 @@ class MemoCommandService(
         id: Long,
         request: UpdateMemoRequest,
     ): String {
-        val memo = memoRepository.findById(id).orElse(null)
+        val memo = memoRepository.findByIdAndUserId(id, userId)
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "일치하는 메모가 없습니다.")
 
         val book = bookRepository.findByIdAndUserId(request.book_no, userId)
@@ -72,7 +72,7 @@ class MemoCommandService(
         userId: Long,
         id: Long,
     ): String {
-        val memo = memoRepository.findById(id).orElse(null)
+        val memo = memoRepository.findByIdAndUserId(id, userId)
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "일치하는 메모가 없습니다.")
 
         val stagedDeletes = mutableListOf<ImageStorage.StagedDelete>()
@@ -99,7 +99,7 @@ class MemoCommandService(
         userId: Long,
         id: Long,
     ): String {
-        val memo = memoRepository.findById(id).orElse(null)
+        val memo = memoRepository.findByIdAndUserId(id, userId)
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "일치하는 메모가 없습니다.")
 
         memo.isLiked = !memo.isLiked

@@ -269,7 +269,7 @@ class MemoController(
         ResponseEntity.status(HttpStatus.CREATED).body(
             LegacyResponses.error(
                 status = 201,
-                message = memoImageService.uploadMemoImage(id, file),
+                message = memoImageService.uploadMemoImage(principal.userId, id, file),
             ),
         )
 
@@ -299,7 +299,7 @@ class MemoController(
         ResponseEntity.status(HttpStatus.CREATED).body(
             LegacyResponses.error(
                 status = 201,
-                message = memoImageService.deleteMemoImage(id),
+                message = memoImageService.deleteMemoImage(principal.userId, id),
             ),
         )
 

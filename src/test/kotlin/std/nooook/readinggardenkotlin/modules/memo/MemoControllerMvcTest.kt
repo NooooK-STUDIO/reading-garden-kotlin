@@ -284,7 +284,7 @@ class MemoControllerMvcTest(
 
         doReturn("이미지 업로드 성공")
             .`when`(memoImageService)
-            .uploadMemoImage(9, file)
+            .uploadMemoImage(1, 9, file)
 
         mockMvc.perform(
             multipart("/api/v1/memo/image")
@@ -357,7 +357,7 @@ class MemoControllerMvcTest(
     fun `delete memo image should return legacy created envelope`() {
         doReturn("이미지 삭제 성공")
             .`when`(memoImageService)
-            .deleteMemoImage(9)
+            .deleteMemoImage(1, 9)
 
         mockMvc.perform(
             delete("/api/v1/memo/image")
