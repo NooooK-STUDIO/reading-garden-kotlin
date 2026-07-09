@@ -643,13 +643,12 @@ class MemoControllerIntegrationTest(
     }
 
     @Test
-    fun `update memo should update another users memo like legacy behavior`() {
-        val ownerAccessToken = signupAndGetAccessToken("memo_update_owner@example.com")
+    fun `update memo should return bad request when memo belongs to another user`() {
+        signupAndGetAccessToken("memo_update_owner@example.com")
         val visitorAccessToken = signupAndGetAccessToken("memo_update_visitor@example.com")
         val ownerUser = checkNotNull(userRepository.findByEmail("memo_update_owner@example.com"))
         val ownerUserNo = ownerUser.id
         val visitorUser = checkNotNull(userRepository.findByEmail("memo_update_visitor@example.com"))
-        val visitorUserNo = visitorUser.id
 
         val ownerBook = bookRepository.save(
             BookEntity(
@@ -693,23 +692,14 @@ class MemoControllerIntegrationTest(
                     """{"book_no":${checkNotNull(visitorBook.id)},"memo_content":"타인 메모 수정"}""",
                 ),
         )
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.resp_code").value(200))
-            .andExpect(jsonPath("$.resp_msg").value("메모 수정 성공"))
-
-        val updated = checkNotNull(memoRepository.findById(checkNotNull(ownerMemo.id)).orElse(null))
-        assertEquals(ownerUserNo, updated.user.id)
-        assertEquals(visitorBook.id, updated.book.id)
-        assertEquals("타인 메모 수정", updated.content)
-
-        mockMvc.perform(
-            get("/api/v1/memo/detail")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer $ownerAccessToken")
-                .queryParam("id", checkNotNull(ownerMemo.id).toString()),
-        )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.resp_code").value(400))
             .andExpect(jsonPath("$.resp_msg").value("일치하는 메모가 없습니다."))
+
+        val updated = checkNotNull(memoRepository.findById(checkNotNull(ownerMemo.id)).orElse(null))
+        assertEquals(ownerUserNo, updated.user.id)
+        assertEquals(ownerBook.id, updated.book.id)
+        assertEquals("소유자 메모", updated.content)
     }
 
     @Test
@@ -765,11 +755,10 @@ class MemoControllerIntegrationTest(
     }
 
     @Test
-    fun `delete memo should delete another users memo like legacy behavior`() {
+    fun `delete memo should return bad request when memo belongs to another user`() {
         signupAndGetAccessToken("memo_delete_owner@example.com")
         val visitorAccessToken = signupAndGetAccessToken("memo_delete_visitor@example.com")
         val ownerUser = checkNotNull(userRepository.findByEmail("memo_delete_owner@example.com"))
-        val ownerUserNo = ownerUser.id
 
         val ownerBook = bookRepository.save(
             BookEntity(
@@ -797,11 +786,11 @@ class MemoControllerIntegrationTest(
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $visitorAccessToken")
                 .queryParam("id", checkNotNull(ownerMemo.id).toString()),
         )
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.resp_code").value(200))
-            .andExpect(jsonPath("$.resp_msg").value("메모 삭제 성공"))
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.resp_code").value(400))
+            .andExpect(jsonPath("$.resp_msg").value("일치하는 메모가 없습니다."))
 
-        assertTrue(memoRepository.findById(checkNotNull(ownerMemo.id)).isEmpty)
+        assertTrue(memoRepository.findById(checkNotNull(ownerMemo.id)).isPresent)
     }
 
     @Test
@@ -869,11 +858,10 @@ class MemoControllerIntegrationTest(
     }
 
     @Test
-    fun `like memo should toggle another users memo like legacy behavior`() {
+    fun `like memo should return bad request when memo belongs to another user`() {
         signupAndGetAccessToken("memo_like_owner@example.com")
         val visitorAccessToken = signupAndGetAccessToken("memo_like_visitor@example.com")
         val ownerUser = checkNotNull(userRepository.findByEmail("memo_like_owner@example.com"))
-        val ownerUserNo = ownerUser.id
 
         val ownerBook = bookRepository.save(
             BookEntity(
@@ -901,11 +889,11 @@ class MemoControllerIntegrationTest(
                 .header(HttpHeaders.AUTHORIZATION, "Bearer $visitorAccessToken")
                 .queryParam("id", checkNotNull(ownerMemo.id).toString()),
         )
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.resp_code").value(200))
-            .andExpect(jsonPath("$.resp_msg").value("메모 즐겨찾기 추가/해제"))
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.resp_code").value(400))
+            .andExpect(jsonPath("$.resp_msg").value("일치하는 메모가 없습니다."))
 
-        assertTrue(checkNotNull(memoRepository.findById(checkNotNull(ownerMemo.id)).orElse(null)).isLiked)
+        assertFalse(checkNotNull(memoRepository.findById(checkNotNull(ownerMemo.id)).orElse(null)).isLiked)
     }
 
     @Test

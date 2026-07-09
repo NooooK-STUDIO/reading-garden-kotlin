@@ -21,11 +21,12 @@ class MemoImageService(
 ) {
     @Transactional
     fun uploadMemoImage(
+        userId: Long,
         id: Long,
         file: MultipartFile,
     ): String {
-        val memo = memoRepository.findById(id)
-            .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "일치하는 메모가 없습니다.") }
+        val memo = memoRepository.findByIdAndUserId(id, userId)
+            ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "일치하는 메모가 없습니다.")
 
         if (file.size > MAX_IMAGE_SIZE_BYTES) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "이미지 용량은 5MB를 초과할 수 없습니다.")
@@ -65,9 +66,12 @@ class MemoImageService(
     }
 
     @Transactional
-    fun deleteMemoImage(id: Long): String {
-        memoRepository.findById(id)
-            .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "일치하는 메모가 없습니다.") }
+    fun deleteMemoImage(
+        userId: Long,
+        id: Long,
+    ): String {
+        memoRepository.findByIdAndUserId(id, userId)
+            ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "일치하는 메모가 없습니다.")
 
         val existingImages = memoImageRepository.findAllByMemoIdIn(listOf(id))
         if (existingImages.isEmpty()) {
