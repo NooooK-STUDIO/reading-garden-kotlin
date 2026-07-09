@@ -143,7 +143,6 @@ jobs:
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
 
           export APP_HOST_DIR="$REMOTE_APP_DIR"
-          export COMPOSE_PROJECT_NAME="reading-garden-prod"
           export APP_CONTAINER_PREFIX="reading-garden-prod"
           export APP_VOLUME_PREFIX="reading-garden-prod"
           export APP_BLUE_HOST_PORT="18080"
@@ -163,7 +162,7 @@ jobs:
           test -f .env
           test -f .runtime.env
           test -f secrets/firebase-service-account.json
-          ./blue-green-deploy.sh
+          COMPOSE_PROJECT_NAME="reading-garden-prod" ./blue-green-deploy.sh
           EOF
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
