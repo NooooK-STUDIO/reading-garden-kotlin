@@ -116,6 +116,7 @@ class OpenApiConfigTest(
         val detailIsbn = requireOperation("get", "/api/v1/book/detail-isbn")
         val bookStatus = requireOperation("get", "/api/v1/book/status")
         val bookRead = requireOperation("get", "/api/v1/book/read")
+        val updateBook = requireOperation("put", "/api/v1/book", "/api/v1/book/")
         val updateRead = requireOperation("put", "/api/v1/book/read")
         val deleteBook = requireOperation("delete", "/api/v1/book", "/api/v1/book/")
         val upload = requireOperation("post", "/api/v1/book/image")
@@ -144,12 +145,16 @@ class OpenApiConfigTest(
         assertResponseExamplesContain(deleteImage, "201", "이미지 삭제 성공")
 
         assertThat(search.at("/parameters").toString()).contains("query", "start", "maxResults")
+        assertThat(updateBook.at("/requestBody/content/application~1json/schema/\$ref").asText()).contains("UpdateBookRequest")
         assertThat(upload.at("/requestBody/content/multipart~1form-data").isMissingNode).isFalse
         assertThat(upload.at("/security").isEmpty).isFalse
         assertThat(upload.at("/responses/400").isMissingNode).isFalse
         assertThat(upload.at("/responses/401").isMissingNode).isFalse
 
         assertSchemaExample("BookStatusResponse", "current_page", "1")
+        assertSchemaExample("BookStatusItemResponse", "book_rating", "5")
+        assertSchemaExample("BookReadDetailResponse", "book_rating", "5")
+        assertSchemaExample("UpdateBookRequest", "book_rating", "5")
         assertSchemaExample("BookReadHistoryItemResponse", "book_current_page", "150")
         assertSchemaExample("BookDetailResponse", "itemPage", "321")
     }
