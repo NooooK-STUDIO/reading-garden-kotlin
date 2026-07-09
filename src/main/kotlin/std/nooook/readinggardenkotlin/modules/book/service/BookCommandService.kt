@@ -88,6 +88,18 @@ class BookCommandService(
         }
         request.book_tree?.let { book.tree = it }
         request.book_status?.let { book.status = it }
+        request.book_rating?.let { rating ->
+            if (rating !in MIN_BOOK_RATING..MAX_BOOK_RATING) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "별점은 1점부터 5점까지 입력할 수 있습니다.")
+            }
+            if (book.status != COMPLETED_BOOK_STATUS) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "다 읽은 책에만 별점을 입력할 수 있습니다.")
+            }
+            book.rating = rating
+        }
+        if (request.book_status != null && book.status != COMPLETED_BOOK_STATUS) {
+            book.rating = null
+        }
         request.book_title?.let { book.title = it }
         request.book_author?.let { book.author = it }
         request.book_image_url?.let { book.imageUrl = it }
@@ -181,6 +193,9 @@ class BookCommandService(
 
     companion object {
         private const val MAX_GARDEN_BOOK_COUNT = 30L
+        private const val COMPLETED_BOOK_STATUS = 1
+        private const val MIN_BOOK_RATING = 1
+        private const val MAX_BOOK_RATING = 5
         private val logger = LoggerFactory.getLogger(BookCommandService::class.java)
     }
 }

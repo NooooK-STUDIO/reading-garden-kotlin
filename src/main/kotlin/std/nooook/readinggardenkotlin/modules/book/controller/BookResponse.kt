@@ -66,6 +66,8 @@ data class BookStatusItemResponse(
     val book_tree: String?,
     @field:Schema(description = "독서 상태 코드", example = "1")
     val book_status: Int,
+    @field:Schema(description = "완독 별점(1~5)", example = "5", nullable = true)
+    val book_rating: Int? = null,
     @field:Schema(description = "독서 진행률", example = "46.7")
     val percent: Double,
     @field:Schema(description = "전체 페이지 수", example = "321")
@@ -134,6 +136,8 @@ data class BookReadDetailResponse(
     val book_tree: String?,
     @field:Schema(description = "독서 상태 코드", example = "1")
     val book_status: Int,
+    @field:Schema(description = "완독 별점(1~5)", example = "5", nullable = true)
+    val book_rating: Int? = null,
     @field:Schema(description = "전체 페이지 수", example = "321")
     val book_page: Int,
     @field:Schema(description = "가든 번호", example = "10", nullable = true)
