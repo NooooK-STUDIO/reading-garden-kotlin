@@ -186,7 +186,7 @@ class MemoImageIntegrationTest(
 
         assertThrows(IllegalStateException::class.java) {
             TransactionTemplate(transactionManager).executeWithoutResult {
-                memoImageService.uploadMemoImage(memoId, replacementFile)
+                memoImageService.uploadMemoImage(userNo, memoId, replacementFile)
                 error("rollback")
             }
         }
@@ -301,6 +301,33 @@ class MemoImageIntegrationTest(
     }
 
     @Test
+    fun `upload memo image should return bad request when memo belongs to another user`() {
+        signupAndGetAccessToken("memoimageuploadowner@example.com")
+        val visitorAccessToken = signupAndGetAccessToken("memoimageuploadvisitor@example.com")
+        val ownerUser = checkNotNull(userRepository.findByEmail("memoimageuploadowner@example.com"))
+        val memoId = createMemo(ownerUser.id, "타인 이미지 업로드 메모")
+        val file = MockMultipartFile(
+            "file",
+            "other-user.png",
+            MediaType.IMAGE_PNG_VALUE,
+            "image-bytes".toByteArray(),
+        )
+
+        mockMvc.perform(
+            multipart("/api/v1/memo/image")
+                .file(file)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $visitorAccessToken")
+                .param("id", memoId.toString()),
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.resp_code").value(400))
+            .andExpect(jsonPath("$.resp_msg").value("일치하는 메모가 없습니다."))
+
+        assertTrue(memoImagesFor(memoId).isEmpty())
+        assertTrue(listRegularFiles().isEmpty())
+    }
+
+    @Test
     fun `delete memo image should remove file and record`() {
         val accessToken = signupAndGetAccessToken("memoimagedelete@example.com")
         val user = checkNotNull(userRepository.findByEmail("memoimagedelete@example.com"))
@@ -367,6 +394,29 @@ class MemoImageIntegrationTest(
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.resp_code").value(400))
             .andExpect(jsonPath("$.resp_msg").value("일치하는 메모가 없습니다."))
+    }
+
+    @Test
+    fun `delete memo image should return bad request when memo belongs to another user`() {
+        signupAndGetAccessToken("memoimagedeleteowner@example.com")
+        val visitorAccessToken = signupAndGetAccessToken("memoimagedeletevisitor@example.com")
+        val ownerUser = checkNotNull(userRepository.findByEmail("memoimagedeleteowner@example.com"))
+        val memoId = createMemo(ownerUser.id, "타인 이미지 삭제 메모")
+        val imageRelativePath = "memo/other-user-delete.png"
+        seedMemoImage(memoId, imageRelativePath, "delete-image")
+        val storedPath = imagesRoot.resolve(imageRelativePath)
+
+        mockMvc.perform(
+            delete("/api/v1/memo/image")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $visitorAccessToken")
+                .queryParam("id", memoId.toString()),
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.resp_code").value(400))
+            .andExpect(jsonPath("$.resp_msg").value("일치하는 메모가 없습니다."))
+
+        assertEquals(1, memoImagesFor(memoId).size)
+        assertTrue(Files.exists(storedPath))
     }
 
     private fun createMemo(
