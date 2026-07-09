@@ -139,6 +139,8 @@ class OpenApiConfigTest(
         assertResponseExamplesContain(search, "200", "책 검색 성공")
         assertResponseExamplesContain(searchIsbn, "200", "책 검색(ISBN) 성공")
         assertResponseExamplesContain(detailIsbn, "200", "책 상세 조회 성공")
+        assertResponseExamplesContain(bookStatus, "200", "book_rating")
+        assertResponseExamplesContain(bookRead, "200", "book_rating")
         assertResponseExamplesContain(updateRead, "200", "독서 기록 수정 성공")
         assertResponseExamplesContain(upload, "201", "이미지 업로드 성공")
         assertResponseExamplesContain(deleteBook, "200", "책 삭제 성공")
@@ -146,6 +148,7 @@ class OpenApiConfigTest(
 
         assertThat(search.at("/parameters").toString()).contains("query", "start", "maxResults")
         assertThat(updateBook.at("/requestBody/content/application~1json/schema/\$ref").asText()).contains("UpdateBookRequest")
+        assertThat(updateBook.at("/requestBody/content/application~1json/examples").toString()).contains("book_rating")
         assertThat(upload.at("/requestBody/content/multipart~1form-data").isMissingNode).isFalse
         assertThat(upload.at("/security").isEmpty).isFalse
         assertThat(upload.at("/responses/400").isMissingNode).isFalse

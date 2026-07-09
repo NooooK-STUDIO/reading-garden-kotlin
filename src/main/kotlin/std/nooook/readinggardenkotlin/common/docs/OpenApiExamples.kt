@@ -261,6 +261,68 @@ object OpenApiExamples {
         }
     """
 
+    const val BOOK_STATUS_SUCCESS = """
+        {
+          "resp_code": 200,
+          "resp_msg": "책 상태 조회 성공",
+          "data": {
+            "current_page": 1,
+            "max_page": 1,
+            "total_items": 1,
+            "page_size": 10,
+            "list": [
+              {
+                "book_no": 1,
+                "book_title": "클린 코드",
+                "book_author": "로버트 C. 마틴",
+                "book_publisher": "인사이트",
+                "book_info": "소개",
+                "book_image_url": "https://example.com/book.jpg",
+                "book_tree": "소설",
+                "book_status": 1,
+                "book_rating": 5,
+                "percent": 100.0,
+                "book_page": 321,
+                "garden_no": 10
+              }
+            ]
+          }
+        }
+    """
+
+    const val BOOK_READ_DETAIL_SUCCESS = """
+        {
+          "resp_code": 200,
+          "resp_msg": "독서 기록 조회 성공",
+          "data": {
+            "book_no": 1,
+            "user_no": 1,
+            "book_title": "클린 코드",
+            "book_author": "로버트 C. 마틴",
+            "book_publisher": "인사이트",
+            "book_info": "소개",
+            "book_image_url": "https://example.com/book.jpg",
+            "book_tree": "소설",
+            "book_status": 1,
+            "book_rating": 5,
+            "book_page": 321,
+            "garden_no": 10,
+            "garden_title": "나의 가든",
+            "garden_color": "blue",
+            "book_current_page": 321,
+            "percent": 100.0,
+            "book_read_list": [],
+            "memo_list": []
+          }
+        }
+    """
+
+    const val BOOK_UPDATE_RATING_REQUEST = """
+        {
+          "book_rating": 5
+        }
+    """
+
     const val BOOK_UPDATE_SUCCESS = """
         {
           "resp_code": 200,
