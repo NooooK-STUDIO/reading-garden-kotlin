@@ -143,6 +143,7 @@ jobs:
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
 
           export APP_HOST_DIR="$REMOTE_APP_DIR"
+          export COMPOSE_PROJECT_NAME="reading-garden-dev"
           export APP_CONTAINER_PREFIX="reading-garden-dev"
           export APP_VOLUME_PREFIX="reading-garden-dev"
           export APP_BLUE_HOST_PORT="18090"
