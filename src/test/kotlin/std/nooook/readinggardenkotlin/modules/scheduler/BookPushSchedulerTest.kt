@@ -33,7 +33,7 @@ class BookPushSchedulerTest {
     private val userRepository: UserRepository = mock(UserRepository::class.java)
     private val gardenRepository: GardenRepository = mock(GardenRepository::class.java)
     private val fcmClient: FcmClient = mock(FcmClient::class.java)
-    private val pushPreferenceService = PushPreferenceService(pushSettingsRepository)
+    private val pushPreferenceService = PushPreferenceService(pushSettingsRepository, userRepository)
     private val pushDeliveryService = PushDeliveryService(
         pushSettingsRepository = pushSettingsRepository,
         userRepository = userRepository,
