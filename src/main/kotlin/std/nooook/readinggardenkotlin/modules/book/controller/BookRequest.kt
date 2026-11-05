@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 data class SearchBooksRequest(
     @field:Schema(description = "검색어", example = "클린 코드")
     val query: String,
-    @field:Schema(description = "검색 시작 index", example = "1", defaultValue = "1")
+    @field:Schema(description = "1부터 시작하는 검색 페이지 번호", example = "1", defaultValue = "1")
     val start: Int = 1,
     @field:Schema(description = "최대 조회 개수", example = "100", defaultValue = "100")
     val maxResults: Int = 100,

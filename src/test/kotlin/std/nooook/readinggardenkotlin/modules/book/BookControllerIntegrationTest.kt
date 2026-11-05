@@ -29,7 +29,7 @@ import std.nooook.readinggardenkotlin.modules.auth.repository.UserRepository
 import std.nooook.readinggardenkotlin.modules.book.entity.BookEntity
 import std.nooook.readinggardenkotlin.modules.book.entity.BookImageEntity
 import std.nooook.readinggardenkotlin.modules.book.entity.BookReadEntity
-import std.nooook.readinggardenkotlin.modules.book.integration.AladinClient
+import std.nooook.readinggardenkotlin.modules.book.integration.BookCatalogClient
 import std.nooook.readinggardenkotlin.modules.book.repository.BookImageRepository
 import std.nooook.readinggardenkotlin.modules.book.repository.BookReadRepository
 import std.nooook.readinggardenkotlin.modules.book.repository.BookRepository
@@ -69,7 +69,7 @@ class BookControllerIntegrationTest(
     @Autowired private val memoImageRepository: MemoImageRepository,
     @Autowired private val gardenRepository: GardenRepository,
     @Autowired private val gardenMemberRepository: GardenMemberRepository,
-    @Autowired private val recordingAladinClient: RecordingAladinClient,
+    @Autowired private val recordingBookCatalogClient: RecordingBookCatalogClient,
 ) {
     private val objectMapper: ObjectMapper = JsonMapper.builder().findAndAddModules().build()
 
@@ -97,13 +97,13 @@ class BookControllerIntegrationTest(
         gardenMemberRepository.deleteAll()
         gardenRepository.deleteAll()
         userRepository.deleteAll()
-        recordingAladinClient.lastQuery = null
-        recordingAladinClient.lastStart = null
-        recordingAladinClient.lastMaxResults = null
-        recordingAladinClient.searchIsbnResponse = mapOf(
+        recordingBookCatalogClient.lastQuery = null
+        recordingBookCatalogClient.lastStart = null
+        recordingBookCatalogClient.lastMaxResults = null
+        recordingBookCatalogClient.searchIsbnResponse = mapOf(
             "item" to listOf(mapOf("isbn13" to "9788937462788")),
         )
-        recordingAladinClient.detailResponse = mapOf(
+        recordingBookCatalogClient.detailResponse = mapOf(
             "searchCategoryId" to 1,
             "searchCategoryName" to "소설",
             "item" to listOf(
@@ -168,9 +168,9 @@ class BookControllerIntegrationTest(
             .andExpect(jsonPath("$.data.itemsPerPage").value(100))
             .andExpect(jsonPath("$.data.item[0].title").value("클린 코드 결과"))
 
-        assertEquals("클린 코드", recordingAladinClient.lastQuery)
-        assertEquals(1, recordingAladinClient.lastStart)
-        assertEquals(100, recordingAladinClient.lastMaxResults)
+        assertEquals("클린 코드", recordingBookCatalogClient.lastQuery)
+        assertEquals(1, recordingBookCatalogClient.lastStart)
+        assertEquals(100, recordingBookCatalogClient.lastMaxResults)
     }
 
     @Test
@@ -187,7 +187,7 @@ class BookControllerIntegrationTest(
             .andExpect(jsonPath("$.resp_msg").value("책 검색(ISBN) 성공"))
             .andExpect(jsonPath("$.data.item[0].isbn13").value("9788937462788"))
 
-        assertEquals("9788937462788", recordingAladinClient.lastIsbnQuery)
+        assertEquals("9788937462788", recordingBookCatalogClient.lastIsbnQuery)
     }
 
     @Test
@@ -214,13 +214,13 @@ class BookControllerIntegrationTest(
             .andExpect(jsonPath("$.data.record").isMap)
             .andExpect(jsonPath("$.data.memo").isMap)
 
-        assertEquals("9788937462788", recordingAladinClient.lastDetailQuery)
+        assertEquals("9788937462788", recordingBookCatalogClient.lastDetailQuery)
     }
 
     @Test
     fun `detail isbn should return empty fields when required fields are missing`() {
         val accessToken = signupAndGetAccessToken("bookdetailfail@example.com")
-        recordingAladinClient.detailResponse = mapOf(
+        recordingBookCatalogClient.detailResponse = mapOf(
             "searchCategoryId" to 1,
             "searchCategoryName" to "소설",
             "item" to listOf(emptyMap<String, Any>()),
@@ -982,6 +982,40 @@ class BookControllerIntegrationTest(
     }
 
     @Test
+    fun `registering and starting a book with unknown page count does not complete it`() {
+        val accessToken = signupAndGetAccessToken("unknownpage@example.com")
+        val registration = mockMvc.perform(
+            post("/api/v1/book/")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """{"book_isbn":"9780306406157","book_title":"페이지 미상 책","book_info":"","book_author":"저자","book_publisher":"출판사","book_image_url":null,"book_status":2,"book_page":0}""",
+                ),
+        )
+            .andExpect(status().isCreated)
+            .andReturn()
+        val bookNo = objectMapper.readTree(registration.response.contentAsString).path("data").path("book_no").asLong()
+
+        mockMvc.perform(
+            post("/api/v1/book/read")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"book_no":$bookNo,"book_current_page":0}"""),
+        )
+            .andExpect(status().isCreated)
+            .andExpect(jsonPath("$.data.percent").value(0.0))
+
+        val book = bookRepository.findById(bookNo).orElseThrow()
+        val read = bookReadRepository.findAllByBookIdOrderByCreatedAtDesc(bookNo).single()
+        assertEquals(0, book.page)
+        assertEquals(0, book.status)
+        assertEquals(null, book.imageUrl)
+        assertEquals(0, read.currentPage)
+        assertNotNull(read.startDate)
+        assertEquals(null, read.endDate)
+    }
+
+    @Test
     fun `create read should transition book status on first and final page`() {
         val accessToken = signupAndGetAccessToken("readstatus@example.com")
         val user = checkNotNull(userRepository.findByEmail("readstatus@example.com"))
@@ -1665,7 +1699,7 @@ class BookControllerIntegrationTest(
             .asText()
     }
 
-    class RecordingAladinClient : AladinClient {
+    class RecordingBookCatalogClient : BookCatalogClient {
         var lastQuery: String? = null
         var lastStart: Int? = null
         var lastMaxResults: Int? = null
@@ -1705,6 +1739,6 @@ class BookControllerIntegrationTest(
     class TestConfig {
         @Bean
         @Primary
-        fun aladinClient(): RecordingAladinClient = RecordingAladinClient()
+        fun bookCatalogClient(): RecordingBookCatalogClient = RecordingBookCatalogClient()
     }
 }
