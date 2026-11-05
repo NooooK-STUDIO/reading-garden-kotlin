@@ -27,7 +27,7 @@ class BookReadService(
         val isFirstRead = bookReadRepository.findAllByBookIdOrderByCreatedAtDesc(request.book_no).isEmpty()
         val now = LocalDateTime.now()
         val currentPage = request.book_current_page
-        val isFinalPage = currentPage == book.page
+        val isFinalPage = book.page > 0 && currentPage == book.page
         val resolvedStartDate = when {
             isFirstRead && request.book_start_date == null -> now
             else -> request.book_start_date

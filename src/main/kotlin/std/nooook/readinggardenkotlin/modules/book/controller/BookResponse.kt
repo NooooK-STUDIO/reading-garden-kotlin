@@ -92,9 +92,9 @@ data class BookStatusResponse(
 
 @Schema(description = "책 상세 조회 응답")
 data class BookDetailResponse(
-    @field:Schema(description = "알라딘 카테고리 id", example = "1")
+    @field:Schema(description = "분류 코드(KDC, 미제공 시 0)", example = "813.7")
     val searchCategoryId: Any,
-    @field:Schema(description = "알라딘 카테고리명", example = "소설")
+    @field:Schema(description = "KDC 대분류명, 미제공 시 빈 문자열", example = "문학")
     val searchCategoryName: String,
     @field:Schema(description = "책 제목", example = "상세 책")
     val title: String,
@@ -104,11 +104,11 @@ data class BookDetailResponse(
     val description: String,
     @field:Schema(description = "ISBN13", example = "9788937462788")
     val isbn13: String,
-    @field:Schema(description = "표지 이미지 URL", example = "https://example.com/book.jpg")
-    val cover: String,
+    @field:Schema(description = "표지 이미지 URL, 미제공 시 null", example = "https://example.com/book.jpg", nullable = true)
+    val cover: String?,
     @field:Schema(description = "출판사", example = "출판사")
     val publisher: String,
-    @field:Schema(description = "페이지 수", example = "321")
+    @field:Schema(description = "페이지 수, 미제공 또는 해석 불가 시 0", example = "321")
     val itemPage: Int,
     @field:Schema(description = "레거시 record placeholder 객체", example = "{}")
     val record: Map<String, Any?>,
@@ -156,25 +156,29 @@ data class BookReadDetailResponse(
     val memo_list: List<BookReadMemoItemResponse>,
 )
 
-@Schema(description = "알라딘 책 검색 결과 항목")
+@Schema(description = "책 검색 결과 항목")
 data class BookSearchItemDocument(
     @field:Schema(description = "책 제목", example = "클린 코드 결과")
     val title: String,
     @field:Schema(description = "저자", example = "로버트 C. 마틴")
     val author: String,
+    @field:Schema(description = "책 소개, 미제공 시 빈 문자열", example = "책 소개")
+    val description: String,
     @field:Schema(description = "ISBN13", example = "9780132350884")
     val isbn13: String,
-    @field:Schema(description = "표지 이미지 URL", example = "https://example.com/cover.jpg")
-    val cover: String,
+    @field:Schema(description = "표지 이미지 URL, 미제공 시 null", example = "https://example.com/cover.jpg", nullable = true)
+    val cover: String?,
     @field:Schema(description = "출판사", example = "프래그마틱")
     val publisher: String,
 )
 
-@Schema(description = "알라딘 책 검색 응답 payload")
+@Schema(description = "기존 앱 호환 책 검색 응답 payload")
 data class BookSearchPayloadDocument(
     @field:Schema(description = "검색어", example = "클린 코드")
     val query: String,
-    @field:Schema(description = "시작 index", example = "1")
+    @field:Schema(description = "검색 결과 전체 수", example = "25")
+    val totalResults: Int,
+    @field:Schema(description = "1부터 시작하는 검색 페이지 번호", example = "1")
     val startIndex: Int,
     @field:Schema(description = "조회한 최대 개수", example = "100")
     val itemsPerPage: Int,

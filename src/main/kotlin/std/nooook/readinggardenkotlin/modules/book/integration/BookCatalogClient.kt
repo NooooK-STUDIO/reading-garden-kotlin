@@ -1,6 +1,6 @@
 package std.nooook.readinggardenkotlin.modules.book.integration
 
-interface AladinClient {
+interface BookCatalogClient {
     fun searchBooks(
         query: String,
         start: Int,

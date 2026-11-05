@@ -83,7 +83,7 @@ class BookController(
         )
 
     @GetMapping("/search")
-    @Operation(summary = "책 검색", description = "알라딘 검색 결과를 레거시 응답 형식으로 반환합니다.")
+    @Operation(summary = "책 검색", description = "국립중앙도서관 제목 검색 결과를 기존 앱 응답 형식으로 반환합니다.")
     @ApiResponses(
         value = [
             ApiResponse(
@@ -102,7 +102,7 @@ class BookController(
     fun searchBooks(
         @Parameter(description = "검색어", example = "클린 코드")
         @RequestParam query: String,
-        @Parameter(description = "검색 시작 index", example = "1")
+        @Parameter(description = "1부터 시작하는 검색 페이지 번호", example = "1")
         @RequestParam(required = false, defaultValue = "1") start: Int,
         @Parameter(description = "최대 조회 개수", example = "100")
         @RequestParam(required = false, defaultValue = "100") maxResults: Int,
@@ -118,7 +118,7 @@ class BookController(
         )
 
     @GetMapping("/search-isbn")
-    @Operation(summary = "ISBN 검색", description = "ISBN13으로 책을 검색합니다. 알라딘 응답 payload를 그대로 노출합니다.")
+    @Operation(summary = "ISBN 검색", description = "ISBN으로 국립중앙도서관을 조회하고 기존 앱 응답 형식으로 반환합니다.")
     @ApiResponses(
         value = [
             ApiResponse(

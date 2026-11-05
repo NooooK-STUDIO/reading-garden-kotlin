@@ -72,4 +72,4 @@ app:
   storage:
     images-root: ${APP_STORAGE_IMAGES_ROOT:/opt/reading-garden/data/images}
   integrations:
-    aladin-ttbkey: ${APP_ALADIN_TTBKEY:${ALADIN_TTBKEY:}}
+    nl-api-key: ${APP_NL_API_KEY:${NL_API_KEY:}}

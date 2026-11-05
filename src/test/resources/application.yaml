@@ -14,4 +14,4 @@ app:
   security:
     hs256-key: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
   integrations:
-    aladin-ttbkey: test-ttb-key
+    nl-api-key: test-nl-key
