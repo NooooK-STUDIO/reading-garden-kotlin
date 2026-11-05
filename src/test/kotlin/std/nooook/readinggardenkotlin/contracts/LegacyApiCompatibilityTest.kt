@@ -28,7 +28,7 @@ import std.nooook.readinggardenkotlin.modules.auth.entity.UserEntity
 import std.nooook.readinggardenkotlin.modules.auth.repository.RefreshTokenRepository
 import std.nooook.readinggardenkotlin.modules.auth.repository.UserRepository
 import std.nooook.readinggardenkotlin.modules.book.entity.BookEntity
-import std.nooook.readinggardenkotlin.modules.book.integration.AladinClient
+import std.nooook.readinggardenkotlin.modules.book.integration.BookCatalogClient
 import std.nooook.readinggardenkotlin.modules.book.repository.BookRepository
 import std.nooook.readinggardenkotlin.modules.garden.entity.GardenEntity
 import std.nooook.readinggardenkotlin.modules.garden.entity.GardenMemberEntity
@@ -54,7 +54,7 @@ class LegacyApiCompatibilityTest(
     @Autowired private val bookRepository: BookRepository,
     @Autowired private val memoRepository: MemoRepository,
     @Autowired private val memoImageRepository: MemoImageRepository,
-    @Autowired private val fixedAladinClient: FixedAladinClient,
+    @Autowired private val fixedBookCatalogClient: FixedBookCatalogClient,
 ) {
     private val objectMapper: ObjectMapper = JsonMapper.builder().findAndAddModules().build()
     private val exactEnvelopeValuePaths = setOf("$.resp_code", "$.resp_msg")
@@ -70,7 +70,7 @@ class LegacyApiCompatibilityTest(
         pushSettingsRepository.deleteAll()
         userRepository.deleteAll()
 
-        fixedAladinClient.searchBooksResponse = mapOf(
+        fixedBookCatalogClient.searchBooksResponse = mapOf(
             "query" to "클린 코드",
             "startIndex" to 1,
             "itemsPerPage" to 100,
@@ -84,7 +84,7 @@ class LegacyApiCompatibilityTest(
                 ),
             ),
         )
-        fixedAladinClient.detailResponse = mapOf(
+        fixedBookCatalogClient.detailResponse = mapOf(
             "searchCategoryId" to 1,
             "searchCategoryName" to "소설",
             "item" to listOf(
@@ -928,7 +928,7 @@ class LegacyApiCompatibilityTest(
         }
     }
 
-    class FixedAladinClient : AladinClient {
+    class FixedBookCatalogClient : BookCatalogClient {
         var searchBooksResponse: Map<String, Any?> = emptyMap()
         var detailResponse: Map<String, Any?> = emptyMap()
 
@@ -947,6 +947,6 @@ class LegacyApiCompatibilityTest(
     class TestConfig {
         @Bean
         @Primary
-        fun aladinClient(): FixedAladinClient = FixedAladinClient()
+        fun bookCatalogClient(): FixedBookCatalogClient = FixedBookCatalogClient()
     }
 }
