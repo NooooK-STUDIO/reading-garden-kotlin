@@ -9,10 +9,14 @@ import kotlin.test.assertNull
 
 class NationalLibraryConfigurationTest {
     @Test
-    fun `missing key permits startup but refuses book lookup`() {
+    fun `missing keys permit startup but refuse book lookup`() {
         ApplicationContextRunner()
-            .withUserConfiguration(NationalLibraryRestClient::class.java)
-            .withPropertyValues("app.integrations.nl-api-key=")
+            .withUserConfiguration(
+                KakaoBookCatalogClient::class.java,
+                KakaoBookRestClient::class.java,
+                NationalLibraryRestClient::class.java,
+            )
+            .withPropertyValues("app.integrations.nl-api-key=", "app.integrations.kakao-rest-api-key=")
             .run { context ->
                 assertNull(context.startupFailure)
                 val client = context.getBean(BookCatalogClient::class.java)

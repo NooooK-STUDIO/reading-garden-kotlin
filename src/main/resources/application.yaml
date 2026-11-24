@@ -88,3 +88,4 @@ app:
     images-root: ${APP_STORAGE_IMAGES_ROOT:/opt/reading-garden/data/images}
   integrations:
     nl-api-key: ${APP_NL_API_KEY:${NL_API_KEY:}}
+    kakao-rest-api-key: ${APP_KAKAO_REST_API_KEY:}
