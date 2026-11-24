@@ -4,6 +4,9 @@ server:
 management:
   server:
     port: ${MANAGEMENT_SERVER_PORT:8081}
+  health:
+    mail:
+      enabled: false
   endpoints:
     web:
       exposure:
@@ -39,6 +42,18 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  mail:
+    host: smtp.gmail.com
+    port: 465
+    username: ${app.email.account}
+    password: ${app.email.password}
+    properties:
+      "[mail.smtp.auth]": true
+      "[mail.smtp.ssl.enable]": true
+      "[mail.smtp.ssl.checkserveridentity]": true
+      "[mail.smtp.connectiontimeout]": 5000
+      "[mail.smtp.timeout]": 5000
+      "[mail.smtp.writetimeout]": 5000
   servlet:
     multipart:
       location: ${SPRING_SERVLET_MULTIPART_LOCATION:/opt/reading-garden/data/images/multipart-temp}
