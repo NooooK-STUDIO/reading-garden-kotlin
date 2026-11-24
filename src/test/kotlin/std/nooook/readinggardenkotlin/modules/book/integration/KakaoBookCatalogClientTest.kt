@@ -27,9 +27,9 @@ class KakaoBookCatalogClientTest {
     private val client: BookCatalogClient = KakaoBookCatalogClient(kakao, library)
 
     @Test
-    fun `default size reads two Kakao pages and preserves legacy title payload`() {
-        expectKakao("title", "합성", 1, 50, kakaoPage(120, false, 1..50))
-        expectKakao("title", "합성", 2, 50, kakaoPage(120, false, 51..100))
+    fun `default search omits target and reads two Kakao pages for the legacy size`() {
+        expectKakao(null, "합성", 1, 50, kakaoPage(120, false, 1..50))
+        expectKakao(null, "합성", 2, 50, kakaoPage(120, false, 51..100))
 
         val result = client.searchBooks("합성", 1, 100)
 
@@ -45,8 +45,8 @@ class KakaoBookCatalogClientTest {
 
     @Test
     fun `offset is applied to raw Kakao rows before invalid records are filtered`() {
-        expectKakao("title", "합성", 2, 50, kakaoPage(150, false, 51..100, invalid = 61))
-        expectKakao("title", "합성", 3, 50, kakaoPage(150, true, 101..150))
+        expectKakao(null, "합성", 2, 50, kakaoPage(150, false, 51..100, invalid = 61))
+        expectKakao(null, "합성", 3, 50, kakaoPage(150, true, 101..150))
 
         val result = client.searchBooks("합성", 2, 60)
 
@@ -61,7 +61,7 @@ class KakaoBookCatalogClientTest {
 
     @Test
     fun `pages past the Kakao limit preserve the total without returning out of range books`() {
-        expectKakao("title", "합성", 1, 1, kakaoPage(1600, false, 1..1))
+        expectKakao(null, "합성", 1, 1, kakaoPage(1600, false, 1..1))
 
         val result = client.searchBooks("합성", 51, 30)
 
@@ -203,7 +203,7 @@ class KakaoBookCatalogClientTest {
     private fun lookup(detail: Boolean, isbn: String): Map<String, Any?> =
         if (detail) client.getBookDetailByIsbn(isbn) else client.searchBookByIsbn(isbn)
 
-    private fun expectKakao(target: String, query: String, page: Int, size: Int, body: String) {
+    private fun expectKakao(target: String?, query: String, page: Int, size: Int, body: String) {
         kakaoServer.expect { request ->
             assertEquals(HttpMethod.GET, request.method)
             assertEquals("KakaoAK synthetic-kakao-key", request.headers.getFirst(HttpHeaders.AUTHORIZATION))

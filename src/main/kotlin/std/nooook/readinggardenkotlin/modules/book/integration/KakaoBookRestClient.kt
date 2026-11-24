@@ -34,18 +34,18 @@ internal class KakaoBookRestClient internal constructor(
 
     private val objectMapper = JsonMapper.builder().build()
 
-    fun search(query: String, target: String, page: Int, size: Int): KakaoBookPage {
+    fun search(query: String, page: Int, size: Int, target: String? = null): KakaoBookPage {
         if (!isConfigured) {
             throw ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "도서 조회 서비스 설정이 준비되지 않았습니다.")
         }
         try {
             val uri = UriComponentsBuilder.fromUriString(API_URL)
                 .queryParam("query", "{query}")
-                .queryParam("target", "{target}")
                 .queryParam("page", page)
                 .queryParam("size", size)
+                .apply { if (target != null) queryParam("target", target) }
                 .encode()
-                .buildAndExpand(mapOf("query" to query, "target" to target))
+                .buildAndExpand(query)
                 .toUri()
             val body = restClient.get().uri(uri)
                 .header(HttpHeaders.AUTHORIZATION, "KakaoAK $apiKey")
