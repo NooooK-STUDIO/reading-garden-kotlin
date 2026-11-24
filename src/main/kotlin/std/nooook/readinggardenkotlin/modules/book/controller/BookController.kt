@@ -83,7 +83,7 @@ class BookController(
         )
 
     @GetMapping("/search")
-    @Operation(summary = "책 검색", description = "국립중앙도서관 제목 검색 결과를 기존 앱 응답 형식으로 반환합니다.")
+    @Operation(summary = "책 검색", description = "카카오 제목 검색 결과를 기존 앱 응답 형식으로 반환합니다.")
     @ApiResponses(
         value = [
             ApiResponse(
@@ -118,7 +118,7 @@ class BookController(
         )
 
     @GetMapping("/search-isbn")
-    @Operation(summary = "ISBN 검색", description = "ISBN으로 국립중앙도서관을 조회하고 기존 앱 응답 형식으로 반환합니다.")
+    @Operation(summary = "ISBN 검색", description = "ISBN이 일치하는 카카오 도서를 조회하고 국립중앙도서관 정보로 보완합니다.")
     @ApiResponses(
         value = [
             ApiResponse(
@@ -145,7 +145,7 @@ class BookController(
         )
 
     @GetMapping("/detail-isbn")
-    @Operation(summary = "책 상세 조회", description = "ISBN13 기준으로 책 상세 정보를 조회합니다.")
+    @Operation(summary = "책 상세 조회", description = "ISBN이 일치하는 도서의 상세 정보와 국립중앙도서관 쪽수를 반환합니다.")
     @ApiResponses(
         value = [
             ApiResponse(
