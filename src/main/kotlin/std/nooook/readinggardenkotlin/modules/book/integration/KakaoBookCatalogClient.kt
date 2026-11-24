@@ -18,14 +18,14 @@ internal class KakaoBookCatalogClient(
         val offset = (start - 1L) * maxResults
         val firstPage = offset / upstreamSize + 1
         if (firstPage > KAKAO_MAX_PAGE) {
-            val total = kakao.search(searchTerm, "title", 1, 1).totalResults
+            val total = kakao.search(searchTerm, 1, 1).totalResults
             return payload(query, start, maxResults, total, emptyList())
         }
         val lastPage = minOf((offset + maxResults - 1) / upstreamSize + 1, KAKAO_MAX_PAGE)
         val books = mutableListOf<Map<String, Any?>?>()
         var total = 0
         for (page in firstPage..lastPage) {
-            val response = kakao.search(searchTerm, "title", page.toInt(), upstreamSize)
+            val response = kakao.search(searchTerm, page.toInt(), upstreamSize)
             if (page == firstPage) total = response.totalResults
             books += response.items
             if (response.isEnd) break
@@ -37,7 +37,7 @@ internal class KakaoBookCatalogClient(
     override fun searchBookByIsbn(query: String): Map<String, Any?> {
         if (!kakao.isConfigured) return nationalLibrary.searchBookByIsbn(query)
         val isbn = requireBookIsbn(query)
-        val books = kakao.search(isbn, "isbn", 1, KAKAO_MAX_PAGE_SIZE).items
+        val books = kakao.search(isbn, 1, KAKAO_MAX_PAGE_SIZE, target = "isbn").items
             .filterNotNull()
             .filter { it["isbn13"] == isbn }
         if (books.isEmpty()) return nationalLibrary.searchBookByIsbn(isbn)

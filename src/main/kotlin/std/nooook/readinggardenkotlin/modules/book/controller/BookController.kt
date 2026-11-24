@@ -83,7 +83,7 @@ class BookController(
         )
 
     @GetMapping("/search")
-    @Operation(summary = "책 검색", description = "카카오 제목 검색 결과를 기존 앱 응답 형식으로 반환합니다.")
+    @Operation(summary = "책 검색", description = "카카오 기본 검색 결과를 기존 앱 응답 형식으로 반환합니다.")
     @ApiResponses(
         value = [
             ApiResponse(
